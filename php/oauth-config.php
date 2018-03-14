@@ -1,12 +1,6 @@
 <?php
 
-	/*********      START -  Fields you need to fill your own values             ***********/
-
-	$client_id= null;  //'1000.3287tegdib2hbchbhjcbsdhbckbdc' //your client_id from https://accounts.zoho.com/developerconsole
-
-	$client_secret= null;   //'a2gb3wihbrfugf7gefdkwjdbcsadc58c462'; //your client_secret from https://accounts.zoho.com/developerconsole
-
-	/*********      END -  Fields you need to fill your own values             ***********/
+	session_start();
 
 	$current_page_url = explode('?',((isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"),2)[0];
 
@@ -15,8 +9,6 @@
 	$oauth_data_file = 'oauth-token-data.json';
 
 	$refresh_token = null;
-
-	session_start();
 
 	if($_SERVER['REQUEST_METHOD']=='GET' && isset($_REQUEST['accounts-server']) && $_REQUEST['accounts-server']=='https://accounts.zoho.com'){ //executed when zoho server posts information to this page
 		assignNewAccessToken('authorization_code',$_REQUEST['code']);
