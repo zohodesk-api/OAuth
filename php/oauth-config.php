@@ -181,10 +181,12 @@
 		$refresh_token = $oauth_data_json -> OAUTH_REFRESH_TOKEN;
 		$oauth_scope_configured = $oauth_data_json -> OAUTH_SCOPE;
 	}
+
+	$redirect_uri = (!isset($redirect_uri))? $current_page_url : $redirect_uri;
 		
 	?>
 	<form method="POST">
-		<h2> Configured Values </h2>
+		<h2> STEP 1 :  Configured Values </h2>
 		<?php if(!isset($client_id) || !isset($client_secret)){ ?>
 			<span class="error"> <?php if(!isset($client_id)){ ?> <b> Client ID </b> <?php } if(!isset($client_secret)){ ?> <b> Client Secret </b> is't configured  <?php } ?> </span>
 			<a href="https://accounts.zoho.com/developerconsole" target="_blank"> Get Client ID and Client Secret </a>
@@ -227,23 +229,23 @@
 	</form>
 
 	<form method="POST">
-		<h2> Current OAuth Token Values </h2>
+		<h2> STEP 2 : Current OAuth Token Values </h2>
 		<div class="inp-item">
 			<label for="oauth_client_id"> ACCESS TOKEN </label>
-			<input id="oauth_client_id" readonly type="text" placeholder=" ACCESS TOKEN" value="<?=$access_token?>" />
+			<input id="oauth_client_id" class="readonly-value-holder" readonly type="text" placeholder=" ACCESS TOKEN" value="<?=$access_token?>" />
 		</div>
 		<div class="inp-item">
 			<label for="oauth_client_secret"> REFRESH TOKEN </label>
-			<input id="oauth_client_secret" readonly type="text" placeholder=" REFRESH TOKEN" value="<?=$refresh_token?>" />
+			<input id="oauth_client_secret" class="readonly-value-holder" readonly type="text" placeholder=" REFRESH TOKEN" value="<?=$refresh_token?>" />
 		</div>
 		<?php if($created_on!=null){ ?>
 		<div class="inp-item">
 			<label for="oauth_redirect_uri"> ACCESS TOKEN CREATED ON </label>
-			<input id="oauth_redirect_uri" disabled type="text" placeholder=" ACCESS TOKEN CREATED ON" value="<?=date('m/d/Y H:i:s', $created_on);?>" />
+			<input id="oauth_redirect_uri" readonly type="text" placeholder=" ACCESS TOKEN CREATED ON" value="<?=date('m/d/Y H:i:s', $created_on);?>" />
 		</div>
 		<div class="inp-item">
 			<label for="oauth_redirect_uri"> ACCESS TOKEN EXPIRES ON <b>( in <?=round(($expires_in - time())/ 60)?> mins )</label>
-			<input id="oauth_redirect_uri" disabled type="text" placeholder=" ACCESS TOKEN EXPIRES ON" value="<?=date('m/d/Y H:i:s', $expires_in);?>" />
+			<input id="oauth_redirect_uri" readonly type="text" placeholder=" ACCESS TOKEN EXPIRES ON" value="<?=date('m/d/Y H:i:s', $expires_in);?>" />
 		</div>
 		
 		<?php } ?>
@@ -378,6 +380,14 @@
 				color: white;
 				border-radius: 5px;
 				font-size: 12px;
+			}
+			input.readonly-value-holder{
+				background-color: lightcyan;
+				color: darkcyan !important;
+				padding: 7px 15px;
+				font-size: 18px;
+				border: 1px dotted;
+				cursor: pointer;
 			}
 	
 	</style>

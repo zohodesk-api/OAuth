@@ -1,6 +1,9 @@
 <?php
 
     /******    SAMPLE PAGE FOR USING OAUTH CODE GENERATED FROM OAUTH-CONFIG.PHP file        ******/
+    session_start();
+    session_destroy();
+    die();
 
     include_once 'oauth-config.php';
 
