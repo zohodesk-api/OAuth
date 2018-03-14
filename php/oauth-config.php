@@ -22,16 +22,20 @@
 		assignNewAccessToken('authorization_code',$_REQUEST['code']);
 	}
 	else if($_SERVER['REQUEST_METHOD']=='GET' && isset($_REQUEST['view-mode']) && $_REQUEST['view-mode']=='home'){
+		normalizeSession();
 		showControlPanel();
 	}
 	else if($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['oauth_config_post']) && $_REQUEST['oauth_config_post']=='CONFIG_CLIENT_DATA_POST'){
 		storeClientDataInFile($_POST['oauth_client_id'], $_POST['oauth_client_secret'], $_POST['oauth_redirect_uri']);
 		showControlPanel();
 	}
+	else if($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['oauth_config_post']) && $_REQUEST['oauth_config_post']=='CONFIG_OAUTH_SCOPE_POST'){
+		storeOAuthScopeDataInFile($_POST['oauth_scope']);
+		getNewAccessCode();
+		showControlPanel();
+	}
 	else{ //executed when included in other files
-		if(time() > $_SESSION['OAUTH_EXPIRES_IN'] && isset($_SESSION['OAUTH_REFRESH_TOKEN'])){
-		    assignNewAccessToken('refresh_token',$_SESSION['OAUTH_REFRESH_TOKEN']);
-		}
+		normalizeSession();
 	}
 
 	function assignNewAccessToken($accessType,$key){
@@ -44,7 +48,7 @@
 			$client_secret = $oauth_data_json -> OAUTH_CLIENT_SECRET;
 			$redirect_uri = $oauth_data_json -> OAUTH_REDIRECT_URI;
 			$refresh_token = $oauth_data_json -> OAUTH_REFRESH_TOKEN;
-			$oauth_scope = 'Desk.tickets.READ';// $oauth_data_json -> OAUTH_SCOPE;
+			$oauth_scope = $oauth_data_json -> OAUTH_SCOPE;// $oauth_data_json -> OAUTH_SCOPE;
 
 	    $auth_query_params=array(
 			'client_id'=>$client_id,
@@ -77,18 +81,30 @@
 			$_SESSION['OAUTH_EXPIRES_IN'] = time()+(($auth_response->expires_in_sec)-1);
 			if($accessType=='authorization_code'){
 				$_SESSION['OAUTH_REFRESH_TOKEN']=$auth_response->refresh_token;
+				storeRefreshTokenInFile($auth_response->refresh_token);
 			}
 			$_SESSION['OAUTH_AUTHTOKEN']=$auth_response->access_token;
-			storeRefreshTokenInFile($auth_response->refresh_token);
+
+			header("location:".$redirect_uri."?view-mode=home");
+
 		}
 		else{
-			echo "error";
+			echo " Error while getting OAuth Token ::::: ";print_r($auth_response);
 		}
 
 		showControlPanel();
 
 		}
 
+	}
+
+	function storeOAuthScopeDataInFile($scope){
+		global $oauth_data_file;
+		if(file_exists($oauth_data_file)){
+			$oauth_data_json = json_decode(file_get_contents($oauth_data_file));
+			$oauth_data_json -> OAUTH_SCOPE = $scope;
+			file_put_contents($oauth_data_file, json_encode($oauth_data_json));
+		}
 	}
 
 	function storeClientDataInFile($client_id, $client_secret, $redirect_uri){
@@ -113,6 +129,36 @@
 		}
 	}
 
+	function getNewAccessCode(){
+		global $oauth_data_file;
+		if(file_exists($oauth_data_file)){
+			$oauth_data_json = json_decode(file_get_contents($oauth_data_file));
+			$client_id = $oauth_data_json -> OAUTH_CLIENT_ID;
+			$client_secret = $oauth_data_json -> OAUTH_CLIENT_SECRET;
+			$redirect_uri = $oauth_data_json -> OAUTH_REDIRECT_URI;
+			$refresh_token = $oauth_data_json -> OAUTH_REFRESH_TOKEN;
+			$oauth_scope = $oauth_data_json -> OAUTH_SCOPE;// $oauth_data_json -> OAUTH_SCOPE;
+
+			header("location:https://accounts.zoho.com/oauth/v2/auth?response_type=code&client_id=$client_id&scope=".strtolower($oauth_scope)."&access_type=offline&redirect_uri=$redirect_uri");
+
+		}
+	}
+
+	function normalizeSession(){
+		global $oauth_data_file;
+		if(!isset($_SESSION['OAUTH_EXPIRES_IN']) || (time() > $_SESSION['OAUTH_EXPIRES_IN'])){
+			if(!isset($_SESSION['OAUTH_REFRESH_TOKEN'])){
+				if(file_exists($oauth_data_file)){
+					$oauth_data_json = json_decode(file_get_contents($oauth_data_file));
+					$_SESSION['OAUTH_REFRESH_TOKEN'] = $oauth_data_json -> OAUTH_REFRESH_TOKEN;
+				}
+			}
+			if(isset($_SESSION['OAUTH_REFRESH_TOKEN'])){
+				assignNewAccessToken('refresh_token',$_SESSION['OAUTH_REFRESH_TOKEN']);
+			}
+		}
+	}
+
 	?>
 	<?php function showControlPanel(){
 		global $current_page_url;
@@ -122,6 +168,7 @@
 	$refresh_token = isset($_SESSION['OAUTH_REFRESH_TOKEN'])?$_SESSION['OAUTH_REFRESH_TOKEN']:null;
 	$expires_in = isset($_SESSION['OAUTH_EXPIRES_IN'])?$_SESSION['OAUTH_EXPIRES_IN']:null;
 	$created_on = isset($_SESSION['OAUTH_CREATED'])?$_SESSION['OAUTH_CREATED']:null;
+	$oauth_scope_configured = null;
 	$client_id = null;
 	$client_secret = null;
 	$redirect_uri = null;
@@ -132,6 +179,7 @@
 		$client_secret = $oauth_data_json -> OAUTH_CLIENT_SECRET;
 		$redirect_uri = $oauth_data_json -> OAUTH_REDIRECT_URI;
 		$refresh_token = $oauth_data_json -> OAUTH_REFRESH_TOKEN;
+		$oauth_scope_configured = $oauth_data_json -> OAUTH_SCOPE;
 	}
 		
 	?>
@@ -178,15 +226,15 @@
 		</div>
 	</form>
 
-	<form method="GET" action="https://accounts.zoho.com/oauth/v2/auth?response_type=code&client_id=<?=$client_id;?>&access_type=offline&redirect_uri=<?=$redirect_uri?>">
+	<form method="POST">
 		<h2> Current OAuth Token Values </h2>
 		<div class="inp-item">
 			<label for="oauth_client_id"> ACCESS TOKEN </label>
-			<input id="oauth_client_id" disabled type="text" placeholder=" ACCESS TOKEN" value="<?=$access_token?>" />
+			<input id="oauth_client_id" readonly type="text" placeholder=" ACCESS TOKEN" value="<?=$access_token?>" />
 		</div>
 		<div class="inp-item">
 			<label for="oauth_client_secret"> REFRESH TOKEN </label>
-			<input id="oauth_client_secret" disabled type="text" placeholder=" REFRESH TOKEN" value="<?=$refresh_token?>" />
+			<input id="oauth_client_secret" readonly type="text" placeholder=" REFRESH TOKEN" value="<?=$refresh_token?>" />
 		</div>
 		<?php if($created_on!=null){ ?>
 		<div class="inp-item">
@@ -202,17 +250,19 @@
 			
 			<?php if(isset($client_id) && isset($client_secret)){ ?>
 			<div class="inp-item">
-			<label for="oauth_scopes"> SCOPE <b>( Comma Seperated OAUTH SCOPES <a href="https://desk.zoho.com/support/APIDocument.do#Authentication#OauthTokens" target="_blank"> Available Scopes</a>)</label>
-			<input id="oauth_scopes" name="scope" type="text" placeholder="DESK.TICKETS.ALL,DESK.CONTACTS.READ,..." value="" />
+			<label for="oauth_scopes"> SCOPE <b>( Comma Seperated OAUTH SCOPES <a href="https://desk.zoho.com/support/APIDocument.do#Authentication#OauthTokens" target="_blank"> Available Scopes</a> )</label>
+			<input id="oauth_scopes" required name="oauth_scope" type="text" placeholder="DESK.TICKETS.ALL,DESK.CONTACTS.READ,..." value="<?=$oauth_scope_configured?>" />
+			<input type="hidden" name="oauth_config_post" value="CONFIG_OAUTH_SCOPE_POST">
 			</div>
 			<div class="inp-item">
-			<input type="submit" id="oauth_generate_tokens" required value="Generate New Access Token & Refresh Token"/> 
+			<input type="submit" id="oauth_generate_tokens" value="Click to Generate New Access Token & Refresh Token"/> 
 			</div>
 			<?php } ?>
 		</div>
 	</form>
 
 	<script type="text/javascript">
+		/*
 		var elem =document.getElementById("oauth_generate_tokens");
 		var scopesElement =document.getElementById("oauth_scopes");
 		elem.addEventListener('click',function(e){
@@ -224,6 +274,7 @@
 				alert("Please Provide OAuth Scopes. For Example DESK.TICKETS.ALL,DESK.CONTACTS.READ");
 			}
 		});
+		*/
 
 	</script>
 
