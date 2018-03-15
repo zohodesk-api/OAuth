@@ -18,6 +18,8 @@
                               CLIENT_ID            VARCHAR(150)  UNIQUE  NOT NULL,
                               CLIENT_SECRET        VARCHAR(150)          NOT NULL,
                               OAUTH_REDIRECT_URI   TEXT                  NULL,
+                              AUTH_URL   	   	   TEXT                  NOT NULL,
+                              ACCESS_TOKEN_URL 	   TEXT                  NOT NULL,
                               OAUTH_REFRESH_TOKEN  VARCHAR(150)          NULL,
                               OAUTH_USER_ID        INTEGER               NOT NULL,
                               OAUTH_SCOPE          TEXT                  NULL)");

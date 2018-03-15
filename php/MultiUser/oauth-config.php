@@ -5,7 +5,7 @@
 	if(!isset($_SESSION['OAUTH_USER_ID'])){
 		header("location:login.php");
 	}
-	
+
 	require 'database_con.php';
 
 	$current_page_url = explode('?',((isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"),2)[0];
@@ -14,7 +14,7 @@
 
 	$refresh_token = null;
 
-	if($_SERVER['REQUEST_METHOD']=='GET' && isset($_REQUEST['accounts-server']) && $_REQUEST['accounts-server']=='https://accounts.zoho.com'){ //executed when zoho server posts information to this page
+	if($_SERVER['REQUEST_METHOD']=='GET' && isset($_REQUEST['accounts-server'])){ //executed when zoho server posts information to this page
 		assignNewAccessToken('authorization_code',$_REQUEST['code']);
 	}
 	else if($_SERVER['REQUEST_METHOD']=='GET' && isset($_REQUEST['view-mode']) && $_REQUEST['view-mode']=='home'){
@@ -22,7 +22,7 @@
 		showControlPanel();
 	}
 	else if($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['oauth_config_post']) && $_REQUEST['oauth_config_post']=='CONFIG_CLIENT_DATA_POST'){
-		storeClientDataInFile($_POST['oauth_client_id'], $_POST['oauth_client_secret'], $_POST['oauth_redirect_uri']);
+		storeClientDataInFile($_POST['oauth_auth_uri'], $_POST['oauth_access_token_uri'], $_POST['oauth_client_id'], $_POST['oauth_client_secret'], $_POST['oauth_redirect_uri']);
 		showControlPanel();
 	}
 	else if($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['oauth_config_post']) && $_REQUEST['oauth_config_post']=='CONFIG_OAUTH_SCOPE_POST'){
@@ -45,6 +45,8 @@
 			$redirect_uri = $oauth_data['OAUTH_REDIRECT_URI'];
 			$refresh_token = $oauth_data['OAUTH_REFRESH_TOKEN'];
 			$oauth_scope = $oauth_data['OAUTH_SCOPE'];
+			$auth_uri = $oauth_data['AUTH_URL'];
+			$access_token_uri = $oauth_data['ACCESS_TOKEN_URL'];
 
 	    $auth_query_params=array(
 			'client_id'=>$client_id,
@@ -61,7 +63,7 @@
 			$auth_query_params['refresh_token']= $key;
 		}
 
-		$auth_url="https://accounts.zoho.com/oauth/v2/token?".urldecode(http_build_query($auth_query_params));
+		$auth_url=$access_token_uri."?".urldecode(http_build_query($auth_query_params));
 
 		$ch = curl_init($auth_url);
 	    curl_setopt($ch,CURLOPT_RETURNTRANSFER,TRUE);
@@ -79,13 +81,16 @@
 				$_SESSION['OAUTH_REFRESH_TOKEN']=$auth_response->refresh_token;
 				storeRefreshTokenInFile($auth_response->refresh_token);
 			}
+			else{
+				$_SESSION['OAUTH_REFRESH_TOKEN'] = $refresh_token;
+			}
 			$_SESSION['OAUTH_AUTHTOKEN']=$auth_response->access_token;
 
 			header("location:".$redirect_uri."?view-mode=home");
 
 		}
 		else{
-			echo " Error while getting OAuth Token ::::: ";print_r($auth_response);
+			echo " Error while getting OAuth Token ::::: ";print_r($auth_response);print_r($info);
 		}
 
 		showControlPanel();
@@ -105,8 +110,8 @@
 		
 	}
 
-	function storeClientDataInFile($client_id, $client_secret, $redirect_uri){
-		insertClientData($client_id, $client_secret, $redirect_uri, $_SESSION['OAUTH_USER_ID']);
+	function storeClientDataInFile($auth_uri, $access_token_uri, $client_id, $client_secret, $redirect_uri){
+		insertClientData($auth_uri, $access_token_uri, $client_id, $client_secret, $redirect_uri, $_SESSION['OAUTH_USER_ID']);
 	}
 
 	function storeRefreshTokenInFile($refresh_token){
@@ -130,8 +135,10 @@
 			$redirect_uri = $oauth_data['OAUTH_REDIRECT_URI'];
 			$refresh_token = $oauth_data['OAUTH_REFRESH_TOKEN'];
 			$oauth_scope = $oauth_data['OAUTH_SCOPE'];
+			$auth_uri = $oauth_data['AUTH_URL'];
+			$access_token_uri = $oauth_data['ACCESS_TOKEN_URL'];
 
-			header("location:https://accounts.zoho.com/oauth/v2/auth?response_type=code&client_id=$client_id&scope=".strtolower($oauth_scope)."&access_type=offline&redirect_uri=$redirect_uri");
+			header("location:".$auth_uri."?response_type=code&client_id=$client_id&scope=".strtolower($oauth_scope)."&access_type=offline&redirect_uri=$redirect_uri");
 
 		}
 	}
@@ -173,6 +180,8 @@
 	$client_secret = null;
 	$redirect_uri = null;
 	$oauth_data = null;
+	$auth_uri = null;
+	$access_token_uri = null;
 
 	if(isset($_SESSION['OAUTH_USER_ID'])){
 
@@ -183,9 +192,15 @@
 			$redirect_uri = $oauth_data['OAUTH_REDIRECT_URI'];
 			$refresh_token = $oauth_data['OAUTH_REFRESH_TOKEN'];
 			$oauth_scope_configured = $oauth_data['OAUTH_SCOPE'];
+			$auth_uri = $oauth_data['AUTH_URL'];
+			$access_token_uri = $oauth_data['ACCESS_TOKEN_URL'];
 	}
 
 	$redirect_uri = (!isset($redirect_uri))? $current_page_url : $redirect_uri;
+
+	$auth_uri = (!isset($auth_uri))? "https://accounts.zoho.com/oauth/v2/auth" : $auth_uri;
+
+	$access_token_uri = (!isset($access_token_uri))? "https://accounts.zoho.com/oauth/v2/token" : $access_token_uri;
 		
 	?>
 	<h1 class="main_title"> Hi <?=explode('@',$_SESSION["OAUTH_USER_EMAIL"])[0]?> </h1>
@@ -215,6 +230,14 @@
 			<? } ?>
 		<?php } ?>
 		<div class="inp-item">
+			<label for="oauth_auth_uri"> Auth URL </label>
+			<input id="oauth_auth_uri" name="oauth_auth_uri" type="text" placeholder=" Auth URI " value="<?=$auth_uri?>" required/>
+		</div>
+		<div class="inp-item">
+			<label for="oauth_access_token_uri"> Access Token URL </label>
+			<input id="oauth_access_token_uri" name="oauth_access_token_uri" type="text" placeholder=" Access Token URI " value="<?=$access_token_uri?>" required/>
+		</div>
+		<div class="inp-item">
 			<label for="oauth_client_id"> Client ID </label>
 			<input id="oauth_client_id" name="oauth_client_id" type="text" placeholder=" Clien ID" value="<?=$client_id?>" required/>
 			<input id="oauth_client_id" type="hidden" name="oauth_config_post" value="CONFIG_CLIENT_DATA_POST"/>
@@ -227,7 +250,7 @@
 			<label for="oauth_redirect_uri"> Redirect URI </label>
 			<input id="oauth_redirect_uri" name="oauth_redirect_uri" type="text" placeholder=" Redirect URI" value="<?=$redirect_uri?>" required/>
 		</div>
-			<div class="inp-item">
+		<div class="inp-item">
 			<input type="submit" value="Update">
 		</div>
 	</form>

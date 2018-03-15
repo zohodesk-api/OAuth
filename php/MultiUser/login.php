@@ -165,11 +165,11 @@
 		<div class="error-msg-form"><?=$errorMsg?></div>
 		<div class="inp-item">
 			<label for="oauth_email"> Email </label>
-			<input id="oauth_email" name="email" type="text" placeholder="Your Email Address" value="<?=$_POST['email']?>" />
+			<input id="oauth_email" required name="email" type="email" placeholder="Your Email Address" value="<?=$_POST['email']?>" />
 		</div>
 		<div class="inp-item">
 			<label for="oauth_password"> Password </label>
-			<input id="oauth_password" name="password" type="text" placeholder="Your Password" value="<?=$_POST['password']?>" />
+			<input id="oauth_password" required name="password" type="password" placeholder="Your Password" value="<?=$_POST['password']?>" />
 		</div>
 		<div class="inp-item">
 			<input type="submit" id="oauth_generate_tokens" value="Proceed"/>

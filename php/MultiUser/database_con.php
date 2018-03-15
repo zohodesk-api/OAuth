@@ -8,9 +8,9 @@
 
    $db = new MyDB();
 
-   function insertClientData($client_id, $client_secret, $redirect_uri, $user_id){
-         return executeQuery("INSERT INTO OAUTH_CLIENT_DATA_TABLE (CLIENT_ID,CLIENT_SECRET,OAUTH_REDIRECT_URI, OAUTH_USER_ID)
-                VALUES ('$client_id', '$client_secret', '$redirect_uri', '$user_id')");
+   function insertClientData($auth_uri, $access_token_uri, $client_id, $client_secret, $redirect_uri, $user_id){
+         return executeQuery("INSERT INTO OAUTH_CLIENT_DATA_TABLE (CLIENT_ID,CLIENT_SECRET,AUTH_URL,ACCESS_TOKEN_URL, OAUTH_REDIRECT_URI, OAUTH_USER_ID)
+                VALUES ('$client_id', '$client_secret', '$auth_uri','$access_token_uri','$redirect_uri', '$user_id')");
    }
 
    function insertNewUser($user_email, $password){
@@ -31,7 +31,7 @@
 
    function executeQuery($sql){
       global $db;
-      return !($db->exec($sql)) ? FALSE:TRUE;
+      return !($db->exec($sql)) ? FALSE : TRUE;
    }
 
    function getQuery($sql){
