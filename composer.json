@@ -1,5 +1,5 @@
 {
 	"require":{
-		"sqlite3":"*"
+		"ext-sqlite3":"*"
 	}
 }
