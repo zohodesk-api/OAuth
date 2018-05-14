@@ -20,9 +20,10 @@ USAGE:
 
 HOW IT WORKS:
 =============
-	Client Details such as CLIENT ID, CLIENT SECRET, REFRESH TOKEN are stored in 'oauth-token-data.json' file.
+	Client Details such as CLIENT ID, CLIENT SECRET, REFRESH TOKEN are stored in 'oauth-token-data.json' file. 
 	(So please restrict access of this file for outside world.)
-
+	Note: (**oath-token-data.json file is automatically created** and updated every time)
+	
 	Whenever 'oauth-config.php' included in a file, if Access Token is expired then new token is created in the background, using the REFRESH TOKEN from the 'oauth-token-data.json' file.
 
 	So It is suggested to move the handling of *storing the data in file* to database.
