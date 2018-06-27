@@ -1,10 +1,12 @@
 <?php
 
-    /******    SAMPLE PAGE FOR USING OAUTH CODE GENERATED FROM OAUTH-CONFIG.PHP file        ******/
+    /******    SAMPLE PAGE FOR USING OAUTH CODE GENERATED FROM OAUTH-CONFIG.PHP file           ******/
+
+    /******    Replace the fields specified in below comments and visit this page from browser ******/
 
     include_once 'oauth-config.php';
 
-    $oauth_token = $_SESSION['OAUTH_AUTHTOKEN']; //your_oauth_token from session/db/file
+    $oauth_token = $_SESSION['OAUTH_AUTHTOKEN'];
     $org_id=3528969563; //<================ REPLACE_WITH_YOUR_ORG_ID
 
     $ticket_data=array(
