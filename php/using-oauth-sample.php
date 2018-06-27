@@ -5,11 +5,11 @@
     include_once 'oauth-config.php';
 
     $oauth_token = $_SESSION['OAUTH_AUTHTOKEN']; //your_oauth_token from session/db/file
-    $org_id=3528969563; 
+    $org_id=3528969563; //<================ REPLACE_WITH_YOUR_ORG_ID
 
     $ticket_data=array(
-        "departmentId"=>"2154890873800000006907",
-        "contactId"=>"2154890038730000081001",
+        "departmentId"=>"2154890873800000006907", //<================ REPLACE_WITH_YOUR_DEPARTMENT_ID  
+        "contactId"=>"2154890038730000081001", //<================ REPLACE_WITH_YOUR_CONTACT_ID  
         "subject"=>date("h:i:s A d.m.Y")." - Newly created ticket from PHP ",
         "description"=>json_encode($_REQUEST)
     );
