@@ -17,6 +17,8 @@ USAGE:
 
 	** Access Tokens will be automatically updated when they expire.
 	** If you face any issue, delete 'oauth-token-data.json' file and follow STEP 2.
+	
+	Please find the file : **using-oauth-sample.php** for example. Before you try, don't forget to Replace the orgId of your own in the **using-oauth-sample.php**.
 
 HOW IT WORKS:
 =============
