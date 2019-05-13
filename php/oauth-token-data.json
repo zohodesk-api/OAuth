@@ -1,7 +1,7 @@
 {
-  "OAUTH_CLIENT_ID":"1000.SJHBDCHVBKSDJCKJNSDJK",
-  "OAUTH_CLIENT_SECRET":"fer2jkn3kjn3iou3e98docenknejkwnck",
-  "OAUTH_REDIRECT_URI":"http:\/\/localhost:8080\/oauth-config.php",
-  "OAUTH_REFRESH_TOKEN":"1000.39839duiwhjkbaksjcd38u98aqch.387278fgcwifuejshfkjcsjds",
-  "OAUTH_SCOPE":"Desk.tickets.ALL,Desk.basic.ALL"
+  "OAUTH_CLIENT_ID":"",
+  "OAUTH_CLIENT_SECRET":"",
+  "OAUTH_REDIRECT_URI":"",
+  "OAUTH_REFRESH_TOKEN":"",
+  "OAUTH_SCOPE":""
 }
